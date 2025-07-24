@@ -1,0 +1,44 @@
+{
+  "name": "btcube-web",
+  "type": "module",
+  "version": "0.0.1",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "description": "A TypeScript library for interacting with smart speedcube devices via Web Bluetooth API.",
+  "exports": {
+    "types": "./dist/index.d.ts",
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
+  },
+  "scripts": {
+    "build": "bun run build.ts",
+    "prepublishOnly": "bun run build"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "bun"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/simonkellly/btcube-web",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/simonkellly/btcube-web.git"
+  },
+  "bugs": "https://github.com/simonkellly/btcube-web/issues",
+  "author": "Simon Kelly",
+  "devDependencies": {
+    "bun-plugin-dts": "^0.3.0",
+    "@types/bun": "1.2.18",
+    "@types/aes-js": "^3.1.4",
+    "@types/web-bluetooth": "^0.0.21"
+  },
+  "dependencies": {
+    "aes-js": "^3.1.2",
+    "crypto-js": "^4.2.0",
+    "cubing": "0.57.2",
+    "rxjs": "^7.8.2"
+  }
+}
