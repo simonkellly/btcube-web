@@ -11,7 +11,6 @@ export function getPacket(message: Uint8Array) {
   const packetLength = 1 + 1 + message.length + 2;
   const padding = 16 - (packetLength % 16);
 
-
   const packet = new Uint8Array(packetLength + padding);
   packet.set([QYSC_MAGIC_BYTE, packetLength], 0);
   packet.set(message, 2);
@@ -116,12 +115,11 @@ export function decodePacket(encryptedPkt: Uint8Array): CubeData {
   }
 
   const opcode = packet[2] as CubeOperations;
-  const result = (opHandlers[opcode] ?? defaultHandler)(packet);
 
   if (!opHandlers[opcode]) {
     console.error('unknown opcode', opcode);
     console.log(packet);
   }
 
-  return result;
+  return (opHandlers[opcode] ?? defaultHandler)(packet);
 }

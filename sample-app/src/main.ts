@@ -57,10 +57,10 @@ document.getElementById('connect')?.addEventListener('click', async () => {
     const solution = await experimentalSolve3x3x3IgnoringCenters(event.pattern as any);
     const scramble = solution.invert();
     movesParagraph.textContent = '';
+    console.log(event.pattern.patternData);
     player.alg = scramble.toString();
   });
 
-  // Handle moves
   cube.events.moves.subscribe((move: CubeMoveEvent) => {
     movesParagraph.textContent += move.move + ' ';
     player.experimentalAddMove(move.move);

@@ -1,8 +1,11 @@
 import { QYSC } from "@/qysc";
 import { SmartCube, SmartCubeDefinition } from "@/smart-cube";
+import { GAN } from "./gan";
 
+// TODO: Handle cubehello for cubes that don't do it automatically
 const cubes: SmartCubeDefinition[] = [
   QYSC,
+  GAN,
 ];
 
 export type BTCube = {

@@ -13,6 +13,9 @@ A sample app can be seen at https://simonkellly.github.io/btcube-web
 - RxJS integration for reactive programming
 - TypeScript support with full type definitions
 
+Note: A start has been made the Gan cube integration, mostly as a POC. If someone would like to complete this feel free to contribute / open a pull request
+
+
 This library follows closely to the standard set by [gan-web-bluetooth](https://github.com/afedotov/gan-web-bluetooth) and implements the qiyi smart cube protocol described at [qiyi_smartcube_protocol](https://github.com/Flying-Toast/qiyi_smartcube_protocol/) with some help from [qy-cube](https://github.com/agolovchuk/qy-cube/blob/main/LICENSE)
 
 ## Installation
