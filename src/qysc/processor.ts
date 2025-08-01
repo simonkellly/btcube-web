@@ -4,7 +4,7 @@ import { type Subject } from 'rxjs';
 import { cube3x3x3 } from "cubing/puzzles";
 import { stateToPattern } from "@/lib/cube-state";
 import { now } from "@/lib/timing";
-import { CubeMoveEvent, CubeStateEvent } from "@/events";
+import { CubeInfoEvent, CubeMoveEvent, CubeStateEvent } from "@/events";
 
 export const MOVES = {
   0x1: 'L\'',
@@ -74,6 +74,7 @@ function extractPreviousMoves(prev: Uint8Array) {
 const createProcessor = async (
   cubeStateEvents: Subject<CubeStateEvent>,
   cubeMoveEvents: Subject<CubeMoveEvent>,
+  cubeInfoEvents: Subject<CubeInfoEvent>,
 ) => {
   let lastState: KPattern | undefined = undefined;
   let lastTimestamp = 0;
@@ -85,6 +86,7 @@ const createProcessor = async (
       const pattern = lastState = stateToPattern(data.initialState);
       lastTimestamp = data.timestamp;
       cubeStateEvents.next({ type: 'hello', pattern });
+      cubeInfoEvents.next({ type: 'battery', battery: data.battery });
     },
     [CubeOperations.CubeSync]: (data: CubeSyncData) => {
       const pattern = lastState = stateToPattern(data.cubeState);
@@ -170,6 +172,7 @@ const createProcessor = async (
       }
       console.log('FreshState found moves: ', foundMoves);
       cubeStateEvents.next({ type: 'freshState', pattern });
+      cubeInfoEvents.next({ type: 'battery', battery: data.battery });
     },
   };
 

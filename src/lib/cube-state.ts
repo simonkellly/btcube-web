@@ -223,7 +223,7 @@ function faceletsToPattern(facelets: string): KPattern {
   return new KPattern(KPUZZLE_333, patternData);
 }
 
-function stateToPattern(state: Uint8Array): KPattern {
+function stateToPattern(state: Uint8Array | number[]): KPattern {
   let facelets = '';
   const COLOR_TO_FACELET = 'LRDUFB';
 

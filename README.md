@@ -9,12 +9,12 @@ A sample app can be seen at https://simonkellly.github.io/btcube-web
 ## Features
 
 - Web Bluetooth integration for QYSC devices
+- Support for Moyu Smart cubes (Not sure which ones, at least v11 AI)
 - Cube state management and manipulation
 - RxJS integration for reactive programming
 - TypeScript support with full type definitions
 
-Note: A start has been made the Gan cube integration, mostly as a POC. If someone would like to complete this feel free to contribute / open a pull request
-
+Note: The moyu protocol implementation is unfinished - particularly there is no handling of the gyro feature
 
 This library follows closely to the standard set by [gan-web-bluetooth](https://github.com/afedotov/gan-web-bluetooth) and implements the qiyi smart cube protocol described at [qiyi_smartcube_protocol](https://github.com/Flying-Toast/qiyi_smartcube_protocol/) with some help from [qy-cube](https://github.com/agolovchuk/qy-cube/blob/main/LICENSE)
 

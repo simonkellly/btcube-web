@@ -1,7 +1,7 @@
 {
   "name": "btcube-web",
   "type": "module",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -19,7 +19,12 @@
     "dist"
   ],
   "keywords": [
-    "bun"
+    "cubing",
+    "web-bluetooth",
+    "smart-cube",
+    "speedcube",
+    "qiyi",
+    "moyu"
   ],
   "license": "MIT",
   "homepage": "https://github.com/simonkellly/btcube-web",
@@ -36,6 +41,7 @@
     "@types/web-bluetooth": "^0.0.21"
   },
   "dependencies": {
+    "@astronautlabs/bitstream": "^4.2.2",
     "aes-js": "^3.1.2",
     "crypto-js": "^4.2.0",
     "cubing": "0.57.2",

@@ -1,41 +1,29 @@
-import { QYSC } from "@/qysc";
-import { SmartCube, SmartCubeDefinition } from "@/smart-cube";
-import { GAN } from "./gan";
+import { MOYU } from "./moyu";
+import { QYSC } from "./qysc";
+import { SmartCubeDefinition } from "./smart-cube";
 
-// TODO: Handle cubehello for cubes that don't do it automatically
-const cubes: SmartCubeDefinition[] = [
-  QYSC,
-  GAN,
-];
+const smartCubes: SmartCubeDefinition[] = [
+  MOYU,
+  QYSC
+]
 
-export type BTCube = {
-  device: BluetoothDevice;
-} & SmartCube;
-
-export async function connectBTCube() {
+export async function connectSmartCube() {
   const device = await navigator.bluetooth.requestDevice({
-    filters: [
-      ...cubes.flatMap(cube => cube.namePrefixes.map(prefix => ({ namePrefix: prefix }))),
-    ],
-    optionalServices: cubes.flatMap(cube => cube.services),
-    optionalManufacturerData: cubes.flatMap(cube => cube.manufacturerData ?? []),
+    filters: smartCubes.flatMap(cube => cube.names.map(name => ({ namePrefix: name }))),
+    optionalServices: smartCubes.flatMap(cube => cube.services),
   });
 
-  const cubeDef = cubes.find(cube => cube.namePrefixes.some(prefix => device.name?.startsWith(prefix)));
+  if (!device.name) throw new Error('No device name');
 
-  if (!cubeDef) throw new Error('Cube not found');
+  for (const cube of smartCubes) {
+    if (cube.names.some((name: string) => device.name!.startsWith(name))) {
+      const macAddress = await cube.getMacAddress(device);
 
-  const macAddress = await cubeDef.getMacAddress(device);
-  if (!macAddress) throw new Error('Mac address not found');
+      return cube.initCube(device, macAddress ?? "CF:30:16:01:DC:E1");
+    }
+  }
 
-  const cube = await cubeDef.initCube(device, macAddress);
-
-  return {
-    device,
-    events: {
-      state: cube.cubeStateEvents,
-      moves: cube.cubeMoveEvents,
-    },
-    commands: cube.commands,
-  };
+  throw new Error('No smart cube found');
 }
+
+export { interpolateTimes, now, interpolateMoves } from "./lib/timing";

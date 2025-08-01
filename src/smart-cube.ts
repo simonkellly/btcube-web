@@ -1,20 +1,22 @@
 import { Subject } from "rxjs";
-import { CubeMoveEvent, CubeStateEvent } from "./events";
-
-export type SmartCube = {
-  cubeStateEvents: Subject<CubeStateEvent>;
-  cubeMoveEvents: Subject<CubeMoveEvent>;
-  commands: {
-    sync: () => Promise<void>;
-    freshState: () => Promise<void>;
-    disconnect: () => Promise<void>;
-  }
-}
+import { CubeInfoEvent, CubeMoveEvent, CubeStateEvent } from "./events";
 
 export type SmartCubeDefinition = {
-  namePrefixes: string[];
+  names: string[];
   services: (string | number)[];
-  manufacturerData?: number[];
-  getMacAddress(device: BluetoothDevice): Promise<Uint8Array | undefined>;
-  initCube(device: BluetoothDevice, macAddress: Uint8Array): Promise<SmartCube>;
+  characteristics: (string | number)[];
+  initCube: (device: BluetoothDevice, macAddress: string) => Promise<SmartCube>;
+  getMacAddress: (device: BluetoothDevice) => Promise<string | null>;
+}
+
+export type SmartCube = {
+  device: BluetoothDevice;
+  events: {
+    state: Subject<CubeStateEvent>;
+    moves: Subject<CubeMoveEvent>;
+    info: Subject<CubeInfoEvent>;
+  };
+  commands: {
+    [key: string]: () => Promise<void>;
+  }
 }

@@ -1,4 +1,4 @@
-import { connectBTCube } from "@/index";
+import { connectSmartCube } from "@/index";
 import { TwistyPlayer } from "cubing/twisty";
 import { experimentalSolve3x3x3IgnoringCenters } from "cubing/search";
 import type { CubeStateEvent, CubeMoveEvent } from "../../src/events";
@@ -45,11 +45,10 @@ player.style.height = '200px';
 document.getElementById('player')?.appendChild(player);
 
 document.getElementById('connect')?.addEventListener('click', async () => {
-  const cube = await connectBTCube();
+  const cube = await connectSmartCube();
   sync = cube.commands.sync;
   disconnect = cube.commands.disconnect;
   
-  // Handle state changes
   cube.events.state.subscribe(async (event: CubeStateEvent) => {
     if (event.type === 'state' || event.type === 'freshState') return;
 
@@ -57,7 +56,6 @@ document.getElementById('connect')?.addEventListener('click', async () => {
     const solution = await experimentalSolve3x3x3IgnoringCenters(event.pattern as any);
     const scramble = solution.invert();
     movesParagraph.textContent = '';
-    console.log(event.pattern.patternData);
     player.alg = scramble.toString();
   });
 

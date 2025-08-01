@@ -2,28 +2,22 @@ import { GattOperationQueue } from "@/lib/gatt-queue";
 import { SmartCube, SmartCubeDefinition } from "../smart-cube";
 import { ackPacket, decodePacket, freshStatePacket, helloPacket, syncPacket } from "./protocol";
 import { Subject } from "rxjs";
-import { CubeMoveEvent, CubeStateEvent } from "@/events";
+import { CubeInfoEvent, CubeMoveEvent, CubeStateEvent } from "@/events";
 import createProcessor from "./processor";
 import { solvedState } from "@/lib/cube-state";
 
-export const QYSC_NAME_PREFIX = 'QY-QYSC';
+const QYSC_NAME_PREFIX = 'QY-QYSC';
 export const QYSC_SERVICE = 0xfff0;
 export const QYSC_CHARACTERISTIC = 0xfff6;
-export const QYSC_MAC_PREFIX = [0xcc, 0xa3, 0x00, 0x00];
+export const QYSC_MAC_PREFIX = "CC:A3:00:00"; // [0xcc, 0xa3, 0x00, 0x00];
 
 async function getMacAddress(device: BluetoothDevice) {
   const trimmedName = device.name!.trim();
   const macName = trimmedName.substring(trimmedName.length - 4);
-  const mac = new Uint8Array([
-    ...QYSC_MAC_PREFIX,
-    parseInt(macName.slice(0, 2), 16),
-    parseInt(macName.slice(2, 4), 16),
-  ]);
-
-  return mac;
+  return QYSC_MAC_PREFIX + ":" + macName.slice(0, 2) + ":" + macName.slice(2, 4);
 }
 
-async function initCube(device: BluetoothDevice, macAddress: Uint8Array) {
+async function initCube(device: BluetoothDevice, macAddress: string) {
   const server = await device.gatt?.connect();
   if (!server) throw new Error('Failed to connect to device');
 
@@ -34,8 +28,9 @@ async function initCube(device: BluetoothDevice, macAddress: Uint8Array) {
 
   const cubeStateEvents = new Subject<CubeStateEvent>();
   const cubeMoveEvents = new Subject<CubeMoveEvent>();
+  const cubeInfoEvents = new Subject<CubeInfoEvent>();
 
-  const processor = await createProcessor(cubeStateEvents, cubeMoveEvents);
+  const processor = await createProcessor(cubeStateEvents, cubeMoveEvents, cubeInfoEvents);
 
   characteristic.addEventListener(
     "characteristicvaluechanged",
@@ -54,7 +49,8 @@ async function initCube(device: BluetoothDevice, macAddress: Uint8Array) {
 
   await operationQueue.enqueue(() => characteristic.startNotifications());
 
-  const hello = helloPacket(macAddress);
+  const macBytes = new Uint8Array(macAddress.split(':').map(byte => parseInt(byte, 16)));
+  const hello = helloPacket(macBytes);
   await operationQueue.enqueue(() => characteristic.writeValue(hello));
 
   let freshStateTimeout: Timer | undefined = undefined;
@@ -66,13 +62,11 @@ async function initCube(device: BluetoothDevice, macAddress: Uint8Array) {
     }, 250);
   });
 
-  // TODO: This should probably be handled globally better
   const commands = {
     sync: async () => {
       const state = solvedState();
       const packet = syncPacket(state);
       await operationQueue.enqueue(() => characteristic.writeValue(packet));
-      // TODO: Handle sync packet properly on clients
     },
     freshState: async () => {
       await operationQueue.enqueue(() => characteristic.writeValue(freshStatePacket()));
@@ -83,15 +77,20 @@ async function initCube(device: BluetoothDevice, macAddress: Uint8Array) {
   }
 
   return {
-    cubeStateEvents,
-    cubeMoveEvents,
+    device,
+    events: {
+      state: cubeStateEvents,
+      moves: cubeMoveEvents,
+      info: cubeInfoEvents,
+    },
     commands,
   } satisfies SmartCube;
 }
 
 export const QYSC = {
-  namePrefixes: ["QY-QYSC"],
+  names: [QYSC_NAME_PREFIX],
   services: [QYSC_SERVICE],
+  characteristics: [QYSC_CHARACTERISTIC],
   getMacAddress,
   initCube,
-} as const satisfies SmartCubeDefinition;
+} satisfies SmartCubeDefinition;

@@ -1,12 +1,19 @@
 import { KPattern } from "cubing/kpuzzle";
 
 export type CubeStateEvent = {
-  type: 'hello' | 'state' | 'sync' | 'freshState';
+  type: string;
   pattern: KPattern;
 }
 
 export type CubeMoveEvent = {
-  move: 'U' | 'U\'' | 'R' | 'R\'' | 'F' | 'F\'' | 'L' | 'L\'' | 'B' | 'B\'' | 'D' | 'D\'';
+  move: string;
   cubeTimestamp?: number;
   localTimestamp?: number;
 }
+
+export type CubeBatteryEvent = {
+  type: 'battery';
+  battery: number;
+}
+
+export type CubeInfoEvent = CubeBatteryEvent;
