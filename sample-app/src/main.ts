@@ -45,7 +45,41 @@ player.style.height = '200px';
 document.getElementById('player')?.appendChild(player);
 
 document.getElementById('connect')?.addEventListener('click', async () => {
-  const cube = await connectSmartCube();
+  const cube = await connectSmartCube(() => {
+    // Show helpful information about MAC address and Chrome internals
+    const helpText = `To connect to your GAN smart cube, you need to provide its MAC address.
+
+How to find your cube's MAC address:
+
+• Chrome on Windows/Linux/Android: 
+  Open chrome://bluetooth-internals/#devices
+  Scan for devices while your cube is in pairing mode
+  Find your cube in the "Address" column
+
+• macOS: 
+  Connect your cube first, then Alt-click the Bluetooth icon in menu bar
+  Or run: system_profiler SPBluetoothDataType in Terminal
+
+• Android: 
+  Use the free "nRF Connect" app from Google Play
+
+Note: For Chrome, enable chrome://flags/#enable-experimental-web-platform-features
+More info: https://gist.github.com/afedotov/52057533a8b27a0277598160c384ae71`;
+
+    // Get saved MAC address from localStorage
+    const savedMacAddress = localStorage.getItem('btcube-mac-address');
+    
+    const macAddress = prompt(helpText + '\n\nEnter your cube\'s MAC address (format: AB:12:34:5D:34:12):', savedMacAddress || '');
+    
+    if (!macAddress) {
+      throw new Error('MAC address is required to connect to the cube');
+    }
+    
+    // Save the MAC address to localStorage for future use
+    localStorage.setItem('btcube-mac-address', macAddress);
+    
+    return Promise.resolve(macAddress);
+  });
   sync = cube.commands.sync;
   disconnect = cube.commands.disconnect;
   

@@ -7,9 +7,8 @@ import { CubeInfoEvent, CubeMoveEvent, CubeStateEvent } from "@/events";
 import { Subject } from "rxjs";
 
 const NAME_PREFIXES = [
-  'WCU_MY',
-  'AiCube',
-]
+  'WCU_MY32',
+];
 
 const SERVICES = [
   MOYU_SERVICE,
@@ -40,22 +39,42 @@ async function initCube(device: BluetoothDevice, macAddress: string) {
 
   const processor = await createProcessor(cubeStateEvents, cubeMoveEvents, cubeInfoEvents);
 
+  let actualMac = macAddress.length === 17 ? macAddress : null;
+
   readCharacteristic.addEventListener(
     "characteristicvaluechanged",
     async function (this: BluetoothRemoteGATTCharacteristic) {
       if (!this.value?.buffer) return;
       const packet = new Uint8Array(this.value.buffer);
+
+      if (actualMac === null) {
+        const mac = protocol.checkMac(macAddress, packet);
+        if (mac) {
+          actualMac = mac;
+        }
+      }
+
       const data = protocol.handlePacket(packet);
       processor.processPacket(data);
     }
   );
 
-  operationQueue.enqueue(() => readCharacteristic.startNotifications());
+  await operationQueue.enqueue(() => readCharacteristic.startNotifications());
 
-  operationQueue.enqueue(() => writeCharacteristic.writeValue(protocol.getCubeInfoPacket()));
+  if (actualMac === null) {
+    const packets = protocol.getCubeInfoPacketCheckMac(macAddress);
+    await operationQueue.enqueue(() => writeCharacteristic.writeValue(packets[0]));
+    await operationQueue.enqueue(() => writeCharacteristic.writeValue(packets[1]));
+  } else {
+    await operationQueue.enqueue(() => writeCharacteristic.writeValue(protocol.getCubeInfoPacket()));
+  }
+
+  while (actualMac === null) {
+    await new Promise(resolve => setTimeout(resolve, 15));
+  }
+
   operationQueue.enqueue(() => writeCharacteristic.writeValue(protocol.getCubeStatusPacket()));
   operationQueue.enqueue(() => writeCharacteristic.writeValue(protocol.getCubePowerPacket()));
-
   operationQueue.enqueue(() => writeCharacteristic.writeValue(protocol.getCubeGyroOperationPacket(false, false)));
 
   return {  
@@ -85,9 +104,19 @@ async function initCube(device: BluetoothDevice, macAddress: string) {
   }
 }
 
+async function getMacAddress(device: BluetoothDevice) {
+  const name = device.name;
+  if (!name) return null;
+
+  const match = name.match(/^WCU_MY32_([0-9A-Fa-f]{4})$/);
+  if (!match) return null;
+
+  return `${match[1].slice(0, 2)}:${match[1].slice(2, 4)}`;
+}
+
 export const MOYU = {
   initCube,
-  getMacAddress: async (_: BluetoothDevice) => null,
+  getMacAddress: getMacAddress,
   names: NAME_PREFIXES,
   services: SERVICES,
   characteristics: CHARACTERISTICS,

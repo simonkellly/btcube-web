@@ -154,9 +154,27 @@ export function createProtocol(mac: string) {
   const reader = new BitstreamReader();
 
   const crypter = createCrypter();
-  crypter.reset(KEY, IV, mac.split(':').map(b => parseInt(b, 16)));
+  if (mac.length === 17) crypter.reset(KEY, IV, mac.split(':').map(b => parseInt(b, 16)));
 
   return {
+    checkMac(mac: string, packet: Uint8Array) {
+      if (mac.length === 17) return mac;
+      if (mac.length !== 5) return null;
+      const mac1 = "CF:30:16:01:" + mac;
+      const mac2 = "CF:30:16:00:" + mac;
+
+      crypter.reset(KEY, IV, mac1.split(':').map(b => parseInt(b, 16)));
+      const decrypted1 = new Uint8Array(packet);
+      crypter.decrypt(decrypted1);
+      if (decrypted1[0] === 161) return mac1;
+
+      crypter.reset(KEY, IV, mac2.split(':').map(b => parseInt(b, 16)));
+      const decrypted2 = new Uint8Array(packet);
+      crypter.decrypt(decrypted2);
+      if (decrypted2[0] === MoyuOps.CubeInfo) return mac2;
+
+      return null;
+    },
     handlePacket: (packet: Uint8Array) => {
       const decrypted = new Uint8Array(packet);
       crypter.decrypt(decrypted);
@@ -173,6 +191,18 @@ export function createProtocol(mac: string) {
       }
 
       return handler(reader);
+    },
+    getCubeInfoPacketCheckMac: (mac: string) => {
+      console.log("getCubeInfoPacketCheckMac", mac);
+      crypter.reset(KEY, IV, ("CF:30:16:01:" + mac).split(':').map(b => parseInt(b, 16)));
+      const packet1 = new Uint8Array([MoyuOps.CubeInfo]);
+      const encrypted1 = createEncryptedPacket(packet1, crypter);
+
+      crypter.reset(KEY, IV, ("CF:30:16:00:" + mac).split(':').map(b => parseInt(b, 16)));
+      const packet2 = new Uint8Array([MoyuOps.CubeInfo]);
+      const encrypted2 = createEncryptedPacket(packet2, crypter);
+
+      return [encrypted1, encrypted2];
     },
     getCubeInfoPacket: () => {
       const packet = new Uint8Array([MoyuOps.CubeInfo]);

@@ -7,7 +7,7 @@ const smartCubes: SmartCubeDefinition[] = [
   QYSC
 ]
 
-export async function connectSmartCube() {
+export async function connectSmartCube(requestMacAddress?: (device: BluetoothDevice) => Promise<string>) {
   const device = await navigator.bluetooth.requestDevice({
     filters: smartCubes.flatMap(cube => cube.names.map(name => ({ namePrefix: name }))),
     optionalServices: smartCubes.flatMap(cube => cube.services),
@@ -19,7 +19,7 @@ export async function connectSmartCube() {
     if (cube.names.some((name: string) => device.name!.startsWith(name))) {
       const macAddress = await cube.getMacAddress(device);
 
-      return cube.initCube(device, macAddress ?? "CF:30:16:01:DC:E1");
+      return cube.initCube(device, macAddress ?? await requestMacAddress?.(device) ?? "00:00:00:00:00:00");
     }
   }
 
