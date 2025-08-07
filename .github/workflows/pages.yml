@@ -27,10 +27,11 @@ jobs:
         uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
+      - id: install-pkg-deps
+        run: bun install
       - id: install-deps
         name: Install dependencies
-        run: |
-          cd sample-app && bun install
+        run: cd sample-app && bun install
       - name: Build
         run: cd sample-app && bun run build
       - name: Setup Pages
