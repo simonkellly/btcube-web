@@ -4,7 +4,7 @@ import { createProtocol } from "./protocol";
 import { SmartCubeDefinition } from "../smart-cube";
 import createProcessor from "./processor";
 import { CubeInfoEvent, CubeMoveEvent, CubeStateEvent } from "@/events";
-import { Subject } from "rxjs";
+import { ReplaySubject, Subject } from "rxjs";
 
 const NAME_PREFIXES = [
   'WCU_MY32',
@@ -35,7 +35,7 @@ async function initCube(device: BluetoothDevice, macAddress: string) {
 
   const cubeStateEvents = new Subject<CubeStateEvent>();
   const cubeMoveEvents = new Subject<CubeMoveEvent>();
-  const cubeInfoEvents = new Subject<CubeInfoEvent>();
+  const cubeInfoEvents = new ReplaySubject<CubeInfoEvent>(5);
 
   const processor = await createProcessor(cubeStateEvents, cubeMoveEvents, cubeInfoEvents);
 
