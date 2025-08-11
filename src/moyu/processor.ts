@@ -49,6 +49,7 @@ const createProcessor = async (
   const handlers = {
     [MoyuOps.CubeInfo]: (data: MoyuInfoData) => {
       lastStep = data.step;
+      cubeInfoEvents.next({ type: 'gyro', gyroEnabled: data.isGyroEnabled });
     },
     [MoyuOps.CubePower]: (data: MoyuPowerData) => {
       cubeInfoEvents.next({ type: 'battery', battery: data.batt });
