@@ -100,6 +100,9 @@ async function initCube(device: BluetoothDevice, macAddress: string) {
       disconnect: async () => {
         device.gatt?.disconnect();
       },
+      freshState: async () => {
+        await operationQueue.enqueue(() => writeCharacteristic.writeValue(protocol.getCubeStatusPacket()));
+      }
     }
   }
 }
